@@ -21,6 +21,12 @@ RCT_EXPORT_METHOD(sendMail:(NSDictionary *)obj resolver:(RCTPromiseResolveBlock)
     NSString *body = [RCTConvert NSString:obj[@"htmlBody"]];
     
     NSString *fromName = [RCTConvert NSString:obj[@"fromName"]];
+
+    // from enum integer to number
+    NSString *authType = [RCTConvert NSString:obj[@"authType"]];
+    NSString *connectionType = [RCTConvert NSString:obj[@"connectionType"]];
+
+    BOOL ignoreCertificateErrors = [RCTConvert BOOL:obj[@"ignoreCertificateErrors"]];
     
     NSString *replyToAddress = [RCTConvert NSString:obj[@"replyTo"]];
     if (replyToAddress == nil) {
@@ -38,8 +44,9 @@ RCT_EXPORT_METHOD(sendMail:(NSDictionary *)obj resolver:(RCTPromiseResolveBlock)
     smtpSession.port = portInteger;
     smtpSession.username = username;
     smtpSession.password = password;
-    smtpSession.authType = MCOAuthTypeSASLPlain;
-    smtpSession.connectionType = MCOConnectionTypeTLS;
+    smtpSession.authType = [self convertAuthType:authType];
+    smtpSession.checkCertificateEnabled = !ignoreCertificateErrors;
+    smtpSession.connectionType = [self convertConnectionType:connectionType];
     MCOMessageBuilder *builder = [[MCOMessageBuilder alloc] init];
     
     MCOAddress *from = [MCOAddress addressWithDisplayName:fromName
@@ -86,6 +93,34 @@ RCT_EXPORT_METHOD(sendMail:(NSDictionary *)obj resolver:(RCTPromiseResolveBlock)
         resolve(result);
       }
     }];
+}
+
+// convert connection type from string to MCOConnectionType
+- (MCOConnectionType)convertConnectionType:(NSString *)connectionType {
+    NSLog(@"Connection type: %@", connectionType);
+    if ([connectionType isEqualToString:@"PLAIN"]) {
+        return MCOConnectionTypeClear;
+    } else if ([connectionType isEqualToString:@"STARTTLS"]) {
+        return MCOConnectionTypeStartTLS;
+    } else if ([connectionType isEqualToString:@"TLS"]) {
+        return MCOConnectionTypeTLS;
+    } else {
+        return MCOConnectionTypeTLS;
+    }
+}
+
+// convert auth type from string to MCOAuthType
+- (MCOAuthType)convertAuthType:(NSString *)authType {
+    NSLog(@"Auth type: %@", authType);
+    if ([authType isEqualToString:@"PLAIN"]) {
+        return MCOAuthTypeSASLPlain;
+    } else if ([authType isEqualToString:@"CRAMMD5"]) {
+        return MCOAuthTypeSASLCRAMMD5;
+    } else if ([authType isEqualToString:@"LOGIN"]) {
+        return MCOAuthTypeSASLLogin;
+    } else {
+        return MCOAuthTypeSASLPlain;
+    }
 }
 
 @end

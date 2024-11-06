@@ -3,7 +3,35 @@ import { NativeModules } from 'react-native';
 
 const { RNSmtpMailer } = NativeModules;
 
+export enum SmtpConnectionTypes {
+    StartTLS = 'STARTTLS',
+    TLS = 'TLS',
+    Plain = 'PLAIN',
+}
+
+export enum SmtpAuthTypes {
+    LOGIN = 'LOGIN',
+    PLAIN = 'PLAIN',
+    CRAMMD5 = 'CRAM-MD5',
+}
+
 export interface SmtpOptions {
+    /**
+     * The smtp connection type.
+     */
+    connectionType: SmtpConnectionTypes;
+
+    /**
+     * The smtp authentication type.
+     */
+    authType: SmtpAuthTypes;
+
+
+    /**
+     * If true, it will ignore certificate errors, i.e: self-signed certificates
+     */
+    ignoreCertificateErrors: boolean;
+
     /**
      * The smtp provider host. i.e: "smtp.gmail.com"
      */
